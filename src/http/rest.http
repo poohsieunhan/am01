@@ -1,0 +1,1 @@
+curl.exe -X POST "http://localhost:2811/api/v1/company" -H "Content-Type: application/json" -d '{"TenCongTy":"Công ty ABC","DiaChi":"Hà Nội","MaSoThue":"0123456789","Email":"abc@gmail.com","Tel":"024-123456","Fax":"024-123456"}'
