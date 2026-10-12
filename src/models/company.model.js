@@ -29,9 +29,13 @@ module.exports = (sequelize, DataTypes) => {
       },
       Email: {
         type: DataTypes.STRING(50),
-        allowNull: false,
+        allowNull: true,
         validate: {
-          isEmail: true,
+          isEmail(value) {
+            if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+              throw new Error("Email không đúng định dạng.");
+            }
+          },
         },
       },
       Tel: {

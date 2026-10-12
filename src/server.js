@@ -27,6 +27,14 @@ app.get("/health", async (req, res) => {
   res.status(200).send("I'm OK!");
 });
 
+app.get("/testmail", async (req, res) => {
+  // --- KÍCH HOẠT CRON JOB GỬI MAIL TỰ ĐỘNG ---
+  const { initCronJob } = require("./services/cronMail.service");
+  initCronJob();
+  // -------------------------------------------
+  res.status(200).send("Test Mail Sent!");
+});
+
 // Khởi động Server
 // app.listen(port, () => {
 //   console.log(`Server đang chạy tại http://localhost:${port}`);
@@ -41,11 +49,6 @@ app.get("/health", async (req, res) => {
 //       console.error('❌ Lỗi kết nối MySQL:', err.message);
 //     });
 // });
-
-// --- KÍCH HOẠT CRON JOB GỬI MAIL TỰ ĐỘNG ---
-const { initCronJob } = require('./services/cronMail.service');
-initCronJob(); 
-// -------------------------------------------
 
 async function startServer() {
   try {

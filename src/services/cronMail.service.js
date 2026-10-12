@@ -1,7 +1,7 @@
 const cron = require("node-cron");
 const nodemailer = require("nodemailer");
 const { Op } = require("sequelize");
-// Import các Model của bạn vào đây (chỉnh lại đường dẫn cho đúng cấu trúc dự án)
+
 const {
   Asset: AssetModel,
   EmailConfig: EmailConfigModel,
@@ -54,12 +54,11 @@ async function scanAndSendExpiredAssets() {
     endDate.setDate(startDate.getDate() + notifyDays[0].NotifyBeforeDays); // Cộng thêm số ngày cảnh báo từ
     endDate.setHours(23, 59, 59, 999);
 
-    // Giả định tên cột lưu ngày hạn của bạn trong tblAsset là `ExpirationDate`
-    // Bạn hãy đổi lại đúng tên cột thực tế trong DB của bạn (ví dụ: MaintenanceDate, v.v...)
     const warningAssets = await AssetModel.findAll({
       where: {
         ExpireDate: {
-          [Op.between]: [startDate, endDate],
+          //[Op.between]: [startDate, endDate],
+          [Op.lte]: endDate, // Tìm tất cả tài sản có ExpireDate nhỏ hơn hoặc bằng endDate
         },
       },
       include: [{ model: AssetTypeModel, as: "assetTypeId" }], // Lấy kèm loại tài sản để hiển thị cho đẹp
@@ -150,19 +149,18 @@ async function scanAndSendExpiredAssets() {
 // Hàm kích hoạt lập lịch tự động chạy Job
 function initCronJob() {
   // Cấu hình chạy định kỳ: Đang đặt mặc định là 08:00 sáng MỖI NGÀY ('0 8 * * *')
-  // Nếu muốn test nhanh xem nó chạy luôn, bạn có thể đổi thành mỗi phút một lần: '*/1 * * * *'
-  cron.schedule(
-    //"0 8 * * *",
-    "*/1 * * * *",
-    () => {
-      scanAndSendExpiredAssets();
-    },
-    {
-      scheduled: true,
-      timezone: "Asia/Ho_Chi_Minh", // Chạy chính xác theo múi giờ Việt Nam +7
-    }
-  );
-
+  // cron.schedule(
+  //   //"0 8 * * *",
+  //   "*/1 * * * *",
+  //   () => {
+  //     scanAndSendExpiredAssets();
+  //   },
+  //   {
+  //     scheduled: true,
+  //     timezone: "Asia/Ho_Chi_Minh", // Chạy chính xác theo múi giờ Việt Nam +7
+  //   }
+  // );
+  scanAndSendExpiredAssets(); // Gọi ngay khi khởi động server để test, sau đó mới bật cron định kỳ
   console.log(
     "✅ [Cron Job] Lập lịch tự động quét gửi mail tài sản đã được kích hoạt (08:00 hàng ngày)."
   );
