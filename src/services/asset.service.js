@@ -1,4 +1,10 @@
-const { Account: AccountModel, Asset: AssetModel, Company: CompanyModel } = require("../models");
+const {
+  Account: AccountModel,
+  Asset: AssetModel,
+  AssetType: AssetTypeModel,
+  Company: CompanyModel,
+  Project: ProjectModel,
+} = require("../models");
 const { ErrorResponse, BadRequestError } = require("../core/error.response");
 
 class AssetService {
@@ -24,6 +30,29 @@ class AssetService {
       offset,
       limit,
       order: [["Id", "DESC"]],
+      include: [
+        {
+          model: AssetTypeModel,
+          as: "assetTypeId",
+          attributes: ["Id", "Code", "Name"],
+        },
+        {
+          model: CompanyModel,
+          as: "company",
+          attributes: ["Id", "TenCongTy", "MaSoThue"],
+        },
+        {
+          model: AccountModel,
+          as: "account",
+          attributes: ["Id", "Name", "Username"],
+        },
+        {
+          model: ProjectModel,
+          as: "project",
+          attributes: ["Id", "Name", "Address"],
+        },
+      ],
+      distinct: true,
     });
 
     return {
@@ -39,7 +68,30 @@ class AssetService {
 
   // Lấy detail 1 Asset theo Id
   static async getAssetById(id) {
-    const asset = await AssetModel.findByPk(id);
+    const asset = await AssetModel.findByPk(id, {
+      include: [
+        {
+          model: AssetTypeModel,
+          as: "assetTypeId",
+          attributes: ["Id", "Code", "Name"],
+        },
+        {
+          model: CompanyModel,
+          as: "company",
+          attributes: ["Id", "TenCongTy", "MaSoThue"],
+        },
+        {
+          model: AccountModel,
+          as: "account",
+          attributes: ["Id", "Name", "Username"],
+        },
+        {
+          model: ProjectModel,
+          as: "project",
+          attributes: ["Id", "Name", "Address"],
+        },
+      ],
+    });
     return asset; // có thể null nếu không tìm thấy
   }
 

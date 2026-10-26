@@ -1,5 +1,6 @@
 const {
   AssetTypeNotification: AssetTypeNotificationModel,
+  AssetType: AssetTypeModel,
   Asset: AssetModel,
 } = require("../models");
 const { ErrorResponse, BadRequestError } = require("../core/error.response");
@@ -29,6 +30,14 @@ class AssetTypeNotificationService {
       offset,
       limit,
       order: [["Id", "DESC"]],
+      include: [
+        {
+          model: AssetTypeModel,
+          as: "assetType",
+          attributes: ["Id", "Code", "Name"],
+        },
+      ],
+      distinct: true,
     });
 
     return {
@@ -44,7 +53,18 @@ class AssetTypeNotificationService {
 
   // Lấy detail 1 Account theo Id
   static async getAssetTypeNotificationById(id) {
-    const assetTypeNotification = await AssetTypeNotificationModel.findByPk(id);
+    const assetTypeNotification = await AssetTypeNotificationModel.findByPk(
+      id,
+      {
+        include: [
+          {
+            model: AssetTypeModel,
+            as: "assetType",
+            attributes: ["Id", "Code", "Name"],
+          },
+        ],
+      }
+    );
     return assetTypeNotification; // có thể null nếu không tìm thấy
   }
 

@@ -5,7 +5,10 @@ module.exports = (sequelize, DataTypes) => {
   class AssetTypeNotification extends Model {
     static associate(models) {
       // Định nghĩa quan hệ: Một thông báo thuộc về một loại tài sản
-      // this.belongsTo(models.AssetType, { foreignKey: 'AssetTypeId' });
+      this.belongsTo(models.AssetType, {
+        foreignKey: "AssetTypeId",
+        as: "assetType",
+      });
     }
   }
 

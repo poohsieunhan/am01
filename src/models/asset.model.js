@@ -9,9 +9,11 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // Định nghĩa quan hệ: Một Asset thuộc về một Company
-      this.belongsTo(models.Company, { foreignKey: "CompanyId" });
-      this.belongsTo(models.AssetType, { foreignKey: "AssetTypeId" , as: "assetTypeId" });
+      // Định nghĩa quan hệ
+      this.belongsTo(models.Company, { foreignKey: "CompanyId", as: "company" });
+      this.belongsTo(models.AssetType, { foreignKey: "AssetTypeId", as: "assetTypeId" });
+      this.belongsTo(models.Account, { foreignKey: "AccountId", as: "account" });
+      this.belongsTo(models.Project, { foreignKey: "ProjectId", as: "project" });
     }
   }
 
