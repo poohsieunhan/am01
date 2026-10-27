@@ -7,6 +7,7 @@ const router = express.Router();
 // router.use(checkPermission('0000'));
 
 router.get("", asyncHandler(assetController.getAllAssets));
+router.get("/expiring", asyncHandler(assetController.getExpiringAssets));
 router.get("/:Id", asyncHandler(assetController.getAssetById));
 router.post("", asyncHandler(assetController.createAsset));
 router.put("/:Id", asyncHandler(assetController.updateAsset));

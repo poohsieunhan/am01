@@ -21,6 +21,19 @@ class AssetController {
     }
   };
 
+  getExpiringAssets = async (req, res, next) => {
+    const { days, page, limit, type } = req.query;
+    new SuccessResponse({
+      message: "Expiring assets retrieved successfully",
+      metadata: await assetService.getExpiringAssets({
+        days: Number(days) || 30,
+        page: Number(page) || 1,
+        limit: Number(limit) || 50,
+        type: type || "expiring",
+      }),
+    }).send(res);
+  };
+
   getAllAssets = async (req, res, next) => {
     const { page, limit } = req.query;
     new SuccessResponse({

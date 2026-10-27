@@ -29,6 +29,14 @@ class AssetNotificationService {
       offset,
       limit,
       order: [["Id", "DESC"]],
+      include: [
+        {
+          model: AssetModel,
+          as: "asset",
+          attributes: ["Id", "Code", "Name"],
+        },
+      ],
+      distinct: true,
     });
 
     return {
@@ -42,9 +50,17 @@ class AssetNotificationService {
     };
   }
 
-  // Lấy detail 1 Account theo Id
+  // Lấy detail 1 AssetNotification theo Id
   static async getAssetNotificationById(id) {
-    const assetNotification = await AssetNotificationModel.findByPk(id);
+    const assetNotification = await AssetNotificationModel.findByPk(id, {
+      include: [
+        {
+          model: AssetModel,
+          as: "asset",
+          attributes: ["Id", "Code", "Name"],
+        },
+      ],
+    });
     return assetNotification; // có thể null nếu không tìm thấy
   }
 
@@ -63,14 +79,6 @@ class AssetNotificationService {
   // Xóa 1 AssetNotification
   static async deleteAssetNotification(id) {
     const assetNotification = await AssetNotificationModel.findByPk(id);
-
-    const foundAsset = await AssetModel.count({
-      where: { AssetNotificationId: id },
-    });
-    if (foundAsset > 0)
-      throw new ErrorResponse(
-        "AssetNotification đã tồn tại trong Asset. Không thể xóa!"
-      );
 
     if (!assetNotification) {
       return null;
