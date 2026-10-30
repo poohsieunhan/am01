@@ -1,5 +1,6 @@
 const { EmailRecipient: EmailRecipientModel } = require("../models");
 const { ErrorResponse, BadRequestError } = require("../core/error.response");
+const { Op } = require("sequelize");
 
 class EmailRecipientService {
   // Tạo mới 1 EmailRecipient
@@ -17,10 +18,19 @@ class EmailRecipientService {
   }
 
   // Lấy danh sách EmailRecipient
-  static async getAllEmailRecipients({ page = 1, limit = 10 } = {}) {
+  static async getAllEmailRecipients({ page = 1, limit = 10, search = "" } = {}) {
     const offset = (page - 1) * limit;
 
+    const where = {};
+    if (search && search.trim()) {
+      const q = `%${search.trim()}%`;
+      where[Op.or] = [
+        { Email: { [Op.like]: q } },
+      ];
+    }
+
     const { rows, count } = await EmailRecipientModel.findAndCountAll({
+      where,
       offset,
       limit,
       order: [["Id", "DESC"]],

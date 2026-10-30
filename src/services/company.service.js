@@ -1,5 +1,6 @@
 const { Company: CompanyModel } = require("../models");
 const { ErrorResponse, BadRequestError } = require("../core/error.response");
+const { Op } = require("sequelize");
 
 class CompanyService {
   // Tạo mới 1 Company
@@ -17,10 +18,23 @@ class CompanyService {
   }
 
   // Lấy danh sách Company
-  static async getAllCompanies({ page = 1, limit = 10 } = {}) {
+  static async getAllCompanies({ page = 1, limit = 10, search = "" } = {}) {
     const offset = (page - 1) * limit;
 
+    const where = {};
+    if (search && search.trim()) {
+      const q = `%${search.trim()}%`;
+      where[Op.or] = [
+        { TenCongTy: { [Op.like]: q } },
+        { MaSoThue: { [Op.like]: q } },
+        { DiaChi: { [Op.like]: q } },
+        { SoDienThoai: { [Op.like]: q } },
+        { Email: { [Op.like]: q } },
+      ];
+    }
+
     const { rows, count } = await CompanyModel.findAndCountAll({
+      where,
       offset,
       limit,
       order: [["Id", "DESC"]],

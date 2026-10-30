@@ -22,12 +22,13 @@ class CompanyController {
   };
 
   getAllCompanies = async (req, res, next) => {
-    const { page, limit } = req.query;
+    const { page, limit, search } = req.query;
     new SuccessResponse({
       message: "Companies retrieved successfully",
       metadata: await companyService.getAllCompanies({
         page: Number(page) || 1,
         limit: Number(limit) || 10,
+        search: search || "",
       }),
     }).send(res);
   };

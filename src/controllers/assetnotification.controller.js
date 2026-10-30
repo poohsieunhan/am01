@@ -24,12 +24,13 @@ class AssetNotificationController {
   };
 
   getAllAssetNotifications = async (req, res, next) => {
-    const { page, limit } = req.query;
+    const { page, limit, search } = req.query;
     new SuccessResponse({
       message: "AssetNotifications retrieved successfully",
       metadata: await assetNotificationService.getAllAssetNotifications({
         page: Number(page) || 1,
         limit: Number(limit) || 10,
+        search: search || "",
       }),
     }).send(res);
   };

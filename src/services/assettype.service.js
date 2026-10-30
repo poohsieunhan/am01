@@ -1,5 +1,6 @@
 const { AssetType: AssetTypeModel, Asset: AssetModel } = require("../models");
 const { ErrorResponse, BadRequestError } = require("../core/error.response");
+const { Op } = require("sequelize");
 
 class AssetTypeService {
   // Tạo mới 1 AssetType
@@ -17,10 +18,21 @@ class AssetTypeService {
   }
 
   // Lấy danh sách AssetType
-  static async getAllAssetTypes({ page = 1, limit = 10 } = {}) {
+  static async getAllAssetTypes({ page = 1, limit = 10, search = "" } = {}) {
     const offset = (page - 1) * limit;
 
+    const where = {};
+    if (search && search.trim()) {
+      const q = `%${search.trim()}%`;
+      where[Op.or] = [
+        { Name: { [Op.like]: q } },
+        { Code: { [Op.like]: q } },
+        { Description: { [Op.like]: q } },
+      ];
+    }
+
     const { rows, count } = await AssetTypeModel.findAndCountAll({
+      where,
       offset,
       limit,
       order: [["Id", "DESC"]],

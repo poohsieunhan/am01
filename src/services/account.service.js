@@ -1,5 +1,6 @@
 const { Account: AccountModel, Asset: AssetModel } = require("../models");
 const { ErrorResponse, BadRequestError } = require("../core/error.response");
+const { Op } = require("sequelize");
 
 class AccountService {
   // Tạo mới 1 Account
@@ -17,10 +18,21 @@ class AccountService {
   }
 
   // Lấy danh sách Account
-  static async getAllAccounts({ page = 1, limit = 10 } = {}) {
+  static async getAllAccounts({ page = 1, limit = 10, search = "" } = {}) {
     const offset = (page - 1) * limit;
 
+    const where = {};
+    if (search && search.trim()) {
+      const q = `%${search.trim()}%`;
+      where[Op.or] = [
+        { Name: { [Op.like]: q } },
+        { Username: { [Op.like]: q } },
+        { Email: { [Op.like]: q } },
+      ];
+    }
+
     const { rows, count } = await AccountModel.findAndCountAll({
+      where,
       offset,
       limit,
       order: [["Id", "DESC"]],

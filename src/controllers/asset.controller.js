@@ -22,7 +22,7 @@ class AssetController {
   };
 
   getExpiringAssets = async (req, res, next) => {
-    const { days, page, limit, type } = req.query;
+    const { days, page, limit, type, search } = req.query;
     new SuccessResponse({
       message: "Expiring assets retrieved successfully",
       metadata: await assetService.getExpiringAssets({
@@ -30,17 +30,41 @@ class AssetController {
         page: Number(page) || 1,
         limit: Number(limit) || 50,
         type: type || "expiring",
+        search: search || "",
       }),
     }).send(res);
   };
 
+  sendNotificationMail = async (req, res, next) => {
+    try {
+      const { type, days } = req.body;
+      const { scanAndSendExpiredAssets } = require("../services/cronMail.service");
+      const result = await scanAndSendExpiredAssets({
+        type: type || "expiring",
+        days: days ? Number(days) : undefined,
+      });
+
+      new SuccessResponse({
+        message: result.message || "Gửi email thông báo thành công",
+        metadata: result,
+      }).send(res);
+    } catch (error) {
+      const status = error.statusCode || 400;
+      res.status(status).json({
+        status: "error",
+        message: error.message || "Gặp lỗi khi gửi email thông báo",
+      });
+    }
+  };
+
   getAllAssets = async (req, res, next) => {
-    const { page, limit } = req.query;
+    const { page, limit, search } = req.query;
     new SuccessResponse({
       message: "Assets retrieved successfully",
       metadata: await assetService.getAllAssets({
         page: Number(page) || 1,
         limit: Number(limit) || 10,
+        search: search || "",
       }),
     }).send(res);
   };

@@ -10,27 +10,55 @@ const { ErrorResponse, BadRequestError } = require("../core/error.response");
 
 class AssetService {
   // Lấy thống kê và danh sách tài sản sắp hết hạn
-  static async getExpiringAssets({ days = 30, page = 1, limit = 50, type = "expiring" } = {}) {
+  static async getExpiringAssets({ days = 30, page = 1, limit = 50, type = "expiring", search = "" } = {}) {
     const numDays = parseInt(days, 10) || 30;
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
     const targetEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + numDays, 23, 59, 59, 999);
 
-    // 1. Tổng số tài sản
-    const totalAssets = await AssetModel.count();
+    // Điều kiện trạng thái: Chỉ lấy tài sản có tình trạng ĐANG SỬ DỤNG (Status = 1, loại trừ Ngưng sử dụng = 0)
+    const activeStatusCondition = {
+      [Op.or]: [
+        { Status: 1 },
+        { Status: "1" },
+      ],
+    };
 
-    // 2. Số tài sản đã hết hạn
+    let searchCondition = null;
+    if (search && search.trim()) {
+      const q = `%${search.trim()}%`;
+      searchCondition = {
+        [Op.or]: [
+          { Name: { [Op.like]: q } },
+          { Code: { [Op.like]: q } },
+          { Description: { [Op.like]: q } },
+          { "$assetTypeId.Name$": { [Op.like]: q } },
+          { "$company.TenCongTy$": { [Op.like]: q } },
+          { "$project.Name$": { [Op.like]: q } },
+        ],
+      };
+    }
+
+    // 1. Tổng số tài sản đang sử dụng
+    const totalAssets = await AssetModel.count({
+      where: activeStatusCondition,
+    });
+
+    // 2. Số tài sản đã hết hạn (đang sử dụng)
     const expiredCount = await AssetModel.count({
       where: {
+        ...activeStatusCondition,
         ExpireDate: {
+          [Op.ne]: null,
           [Op.lt]: todayStart,
         },
       },
     });
 
-    // 3. Số tài sản sắp hết hạn trong X ngày
+    // 3. Số tài sản sắp hết hạn trong X ngày (đang sử dụng)
     const expiringCount = await AssetModel.count({
       where: {
+        ...activeStatusCondition,
         ExpireDate: {
           [Op.between]: [todayStart, targetEnd],
         },
@@ -41,21 +69,32 @@ class AssetService {
     let whereCondition = {};
     if (type === "expired") {
       whereCondition = {
+        ...activeStatusCondition,
         ExpireDate: {
+          [Op.ne]: null,
           [Op.lt]: todayStart,
         },
       };
     } else if (type === "all_warning") {
       whereCondition = {
+        ...activeStatusCondition,
         ExpireDate: {
+          [Op.ne]: null,
           [Op.lte]: targetEnd,
         },
       };
     } else {
       whereCondition = {
+        ...activeStatusCondition,
         ExpireDate: {
           [Op.between]: [todayStart, targetEnd],
         },
+      };
+    }
+
+    if (searchCondition) {
+      whereCondition = {
+        [Op.and]: [whereCondition, searchCondition],
       };
     }
 
@@ -64,6 +103,7 @@ class AssetService {
       where: whereCondition,
       offset,
       limit,
+      subQuery: false,
       order: [["ExpireDate", "ASC"]],
       include: [
         {
@@ -79,7 +119,7 @@ class AssetService {
         {
           model: AccountModel,
           as: "account",
-          attributes: ["Id", "Name", "Username"],
+          attributes: ["Id", "Name", "Username", "Email"],
         },
         {
           model: ProjectModel,
@@ -125,12 +165,27 @@ class AssetService {
   }
 
   // Lấy danh sách Asset
-  static async getAllAssets({ page = 1, limit = 10 } = {}) {
+  static async getAllAssets({ page = 1, limit = 10, search = "" } = {}) {
     const offset = (page - 1) * limit;
 
+    const where = {};
+    if (search && search.trim()) {
+      const q = `%${search.trim()}%`;
+      where[Op.or] = [
+        { Name: { [Op.like]: q } },
+        { Code: { [Op.like]: q } },
+        { Description: { [Op.like]: q } },
+        { "$assetTypeId.Name$": { [Op.like]: q } },
+        { "$company.TenCongTy$": { [Op.like]: q } },
+        { "$project.Name$": { [Op.like]: q } },
+      ];
+    }
+
     const { rows, count } = await AssetModel.findAndCountAll({
+      where,
       offset,
       limit,
+      subQuery: false,
       order: [["Id", "DESC"]],
       include: [
         {
@@ -146,7 +201,7 @@ class AssetService {
         {
           model: AccountModel,
           as: "account",
-          attributes: ["Id", "Name", "Username"],
+          attributes: ["Id", "Name", "Username", "Email"],
         },
         {
           model: ProjectModel,
@@ -185,7 +240,7 @@ class AssetService {
         {
           model: AccountModel,
           as: "account",
-          attributes: ["Id", "Name", "Username"],
+          attributes: ["Id", "Name", "Username", "Email"],
         },
         {
           model: ProjectModel,

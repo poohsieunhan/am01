@@ -3,7 +3,7 @@ const path = require("path");
 const config = require(path.resolve(__dirname, "../../config/config.js"));
 
 const env = process.env.NODE_ENV || "development";
-const dbConfig = config[env];
+const dbConfig = config[env] || config.development || config.dev;
 
 const pool = mysql.createPool({
   host: dbConfig.host,
@@ -14,11 +14,9 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  connectTimeout: 30000,
-
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  timezone: dbConfig.timezone || "+07:00",
+  ssl: dbConfig.dialectOptions?.ssl || false,
 });
 
 module.exports = pool;
+

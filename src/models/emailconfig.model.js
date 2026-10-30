@@ -32,22 +32,24 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       Username: {
-        type: DataTypes.STRING(25),
-        allowNull: false,
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        defaultValue: "",
       },
       Password: {
-        type: DataTypes.STRING(25),
-        allowNull: false,
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        defaultValue: "",
       },
       FromEmail: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING(100),
         allowNull: false,
         validate: {
           isEmail: true,
         },
       },
       FromName: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING(100),
         allowNull: false,
       },
       Active: {

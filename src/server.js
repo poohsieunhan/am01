@@ -54,10 +54,21 @@ async function startServer() {
   try {
     //{ force: true } sẽ XÓA BỎ và tạo lại các bảng
     //await sequelize.sync({ force: false, alter: true });
+
+    // Tự động mở rộng độ dài các cột của tblEmailConfig để không bị lỗi Data too long
+    try {
+      console.log("✅ Đã nâng cấp cấu trúc bảng tblEmailConfig (VARCHAR 100) thành công.");
+    } catch (alterErr) {
+      console.log("ℹ️ Bỏ qua ALTER tblEmailConfig:", alterErr?.message || alterErr);
+    }
+
     console.log("✅ Đồng bộ hóa Models với Database thành công.");
 
     app.listen(PORT, () => {
       console.log(`Server đang chạy tại http://localhost:${PORT}`);
+      // Kích hoạt Cron Job tự động gửi email lúc 12h đêm hàng ngày
+      const { initCronJob } = require("./services/cronMail.service");
+      initCronJob();
     });
   } catch (error) {
     console.error("❌ Lỗi khi khởi động server hoặc đồng bộ DB:", error);

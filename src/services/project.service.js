@@ -1,6 +1,7 @@
 const { Project: ProjectModel } = require("../models");
-const {Asset:AssetModel} = require("../models");
+const { Asset: AssetModel } = require("../models");
 const { ErrorResponse, BadRequestError } = require("../core/error.response");
+const { Op } = require("sequelize");
 
 class ProjectService {
   // Tạo mới 1 Project
@@ -18,10 +19,21 @@ class ProjectService {
   }
 
   // Lấy danh sách Project
-  static async getAllProjects({ page = 1, limit = 10 } = {}) {
+  static async getAllProjects({ page = 1, limit = 10, search = "" } = {}) {
     const offset = (page - 1) * limit;
 
+    const where = {};
+    if (search && search.trim()) {
+      const q = `%${search.trim()}%`;
+      where[Op.or] = [
+        { Name: { [Op.like]: q } },
+        { Address: { [Op.like]: q } },
+        { Description: { [Op.like]: q } },
+      ];
+    }
+
     const { rows, count } = await ProjectModel.findAndCountAll({
+      where,
       offset,
       limit,
       order: [["Id", "DESC"]],

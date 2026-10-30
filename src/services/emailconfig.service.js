@@ -1,5 +1,6 @@
 const { EmailConfig: EmailConfigModel } = require("../models");
 const { ErrorResponse, BadRequestError } = require("../core/error.response");
+const { Op } = require("sequelize");
 
 class EmailConfigService {
   // Tạo mới 1 EmailConfig
@@ -17,10 +18,22 @@ class EmailConfigService {
   }
 
   // Lấy danh sách EmailConfig
-  static async getAllEmailConfigs({ page = 1, limit = 10 } = {}) {
+  static async getAllEmailConfigs({ page = 1, limit = 10, search = "" } = {}) {
     const offset = (page - 1) * limit;
 
+    const where = {};
+    if (search && search.trim()) {
+      const q = `%${search.trim()}%`;
+      where[Op.or] = [
+        { Host: { [Op.like]: q } },
+        { Username: { [Op.like]: q } },
+        { FromEmail: { [Op.like]: q } },
+        { FromName: { [Op.like]: q } },
+      ];
+    }
+
     const { rows, count } = await EmailConfigModel.findAndCountAll({
+      where,
       offset,
       limit,
       order: [["Id", "DESC"]],

@@ -22,12 +22,13 @@ class ProjectController {
   };
 
   getAllProjects = async (req, res, next) => {
-    const { page, limit } = req.query;
+    const { page, limit, search } = req.query;
     new SuccessResponse({
       message: "Projects retrieved successfully",
       metadata: await projectService.getAllProjects({
         page: Number(page) || 1,
         limit: Number(limit) || 10,
+        search: search || "",
       }),
     }).send(res);
   };

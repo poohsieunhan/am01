@@ -5,23 +5,21 @@ const config = require(path.resolve(__dirname, "../../config/config.js"));
 
 // Xác định môi trường (mặc định là development)
 const env = process.env.NODE_ENV || "development";
-const dbConfig = config[env];
+const dbConfig = config[env] || config.development || config.dev;
 
 if (!dbConfig) {
   throw new Error(
-    `Không tìm thấy cấu hình cho môi trường "${env}" trong config.json`
+    `Không tìm thấy cấu hình cho môi trường "${env}" trong config.js`
   );
 }
 
-// Tạo instance Sequelize sử dụng dbConfig từ JSON
+// Tạo instance Sequelize sử dụng dbConfig
 const sequelize = new Sequelize(
   dbConfig.database,
   dbConfig.username,
   dbConfig.password,
   {
-    host: dbConfig.host,
-    port: dbConfig.port || 3306,
-    dialect: dbConfig.dialect,
+    ...dbConfig,
     logging: console.log, // Bật log để debug SQL
     define: {
       timestamps: true,

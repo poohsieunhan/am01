@@ -15,5 +15,6 @@ router.use("/api/v1/asset", require("./asset"));
 router.use("/api/v1/project", require("./project"));
 router.use("/api/v1/emailrecipient", require("./emailrecipient"));
 router.use("/api/v1/emailconfig", require("./emailconfig"));
+router.use("/api/v1/user", require("./user"));
 
 module.exports = router;

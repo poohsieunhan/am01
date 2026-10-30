@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.get("", asyncHandler(assetController.getAllAssets));
 router.get("/expiring", asyncHandler(assetController.getExpiringAssets));
+router.post("/send-notification-mail", asyncHandler(assetController.sendNotificationMail));
 router.get("/:Id", asyncHandler(assetController.getAssetById));
 router.post("", asyncHandler(assetController.createAsset));
 router.put("/:Id", asyncHandler(assetController.updateAsset));

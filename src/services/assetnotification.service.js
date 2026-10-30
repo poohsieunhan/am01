@@ -3,6 +3,7 @@ const {
   Asset: AssetModel,
 } = require("../models");
 const { ErrorResponse, BadRequestError } = require("../core/error.response");
+const { Op } = require("sequelize");
 
 class AssetNotificationService {
   // Tạo mới 1 AssetNotification
@@ -22,12 +23,23 @@ class AssetNotificationService {
   }
 
   // Lấy danh sách AssetNotification
-  static async getAllAssetNotifications({ page = 1, limit = 10 } = {}) {
+  static async getAllAssetNotifications({ page = 1, limit = 10, search = "" } = {}) {
     const offset = (page - 1) * limit;
 
+    const where = {};
+    if (search && search.trim()) {
+      const q = `%${search.trim()}%`;
+      where[Op.or] = [
+        { "$asset.Name$": { [Op.like]: q } },
+        { "$asset.Code$": { [Op.like]: q } },
+      ];
+    }
+
     const { rows, count } = await AssetNotificationModel.findAndCountAll({
+      where,
       offset,
       limit,
+      subQuery: false,
       order: [["Id", "DESC"]],
       include: [
         {
